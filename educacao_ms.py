@@ -1,12 +1,14 @@
-"""Matrículas por unidade escolar (MS): banco SQLite, filtros e geração do dashboard.
+"""Matrículas por unidade escolar em Mato Grosso do Sul
 
 Uso:
   python educacao_ms.py                  importa os CSVs da pasta atual e gera dashboard.html
-  python educacao_ms.py --api            importa pela API de dados abertos
   python educacao_ms.py --pasta dados/   CSVs em outra pasta
   python educacao_ms.py --saida x.html   nome do HTML gerado
 Precisa do arquivo template.html na mesma pasta deste script.
 """
+
+# 2025 sem dados. 2024 e 2026 foram feitos ainda durante o período letivo.
+
 import argparse
 import csv
 import datetime
@@ -19,8 +21,6 @@ import urllib.request
 
 BANCO = "educacao_ms.db"
 AQUI = os.path.dirname(os.path.abspath(__file__))
-API = ("https://www.dados.ms.gov.br/api/3/action/datastore_search"
-       "?resource_id=matriculas-por-unidade-escolar-%d&limit=1000&offset=%d")
 
 COLUNAS = ["ano", "municipio", "escola", "tipo", "matriculas_total", "apos_censo",
            "transferidos", "cancelados", "abandono", "aprovados", "reprovados",
@@ -28,7 +28,7 @@ COLUNAS = ["ano", "municipio", "escola", "tipo", "matriculas_total", "apos_censo
 
 
 def classificar_tipo(nome):
-  """Deduz o tipo da unidade pelo nome (regra simples, ajuste se precisar)."""
+  """Deduz o tipo da unidade pelo nome."""
   u = nome.upper()
   if "INDÍG" in u or "INDIG" in u:
     return "Indígena"
@@ -58,7 +58,7 @@ class RegistroEscolar:
     self.aprovados = n("Aprovados")
     self.reprovados = n("Reprovados")
     self.cursando = n("Cursando")
-    # EJA não tem reprovação: reprovados sem nenhum aprovado é erro de lançamento
+    # EJA não tem reprovação, reprovados sem nenhum aprovado é erro de lançamento
     self.ajustado = 0
     if self.tipo == "EJA" and self.aprovados == 0 and self.reprovados > 0:
       self.reprovados, self.ajustado = 0, 1
@@ -67,13 +67,12 @@ class RegistroEscolar:
     return tuple(getattr(self, c) for c in COLUNAS)
 
 
-# Configurando o banco de dados (SQLite)
+# Config do banco de dados
 def criar_banco():
   conexao = sqlite3.connect(BANCO)
   cursor = conexao.cursor()
   existentes = [c[1] for c in cursor.execute("PRAGMA table_info(escolas)")]
   if existentes and existentes != ["id"] + COLUNAS:
-    # Banco criado pela versão antiga (menos colunas): recria para reimportar tudo
     print("Banco antigo detectado: recriando a tabela com as novas colunas.")
     cursor.execute("DROP TABLE escolas")
   cursor.execute(f"""
@@ -122,32 +121,6 @@ def importar_csv_para_banco(nome_arquivo):
   finally:
     conexao.close()
 
-
-# Importação a partir da API (CKAN) de dados abertos
-def importar_api_para_banco(ano):
-  conexao = sqlite3.connect(BANCO)
-  cursor = conexao.cursor()
-  try:
-    if ano_ja_importado(cursor, ano):
-      print(f"{ano}: já importado anteriormente.")
-      return
-    linhas, offset = [], 0
-    while True:
-      with urllib.request.urlopen(API % (ano, offset), timeout=60) as resp:
-        resultado = json.load(resp)["result"]
-      linhas += resultado["records"]
-      offset += len(resultado["records"])
-      if not resultado["records"] or offset >= resultado["total"]:
-        break
-    total = inserir(cursor, linhas)
-    conexao.commit()
-    print(f"{ano}: {total} registros importados pela API.")
-  except Exception as e:  # anos sem dados (ex.: 2025) caem aqui
-    print(f"{ano}: sem dados na API ({e}).")
-  finally:
-    conexao.close()
-
-
 # Criando a função de filtragem
 def filtrar_dinamico(municipio=None, ano=None, escola=None, tipo=None, min_aprovados=None):
   conexao = sqlite3.connect(BANCO)
@@ -175,7 +148,7 @@ def filtrar_dinamico(municipio=None, ano=None, escola=None, tipo=None, min_aprov
   return resultados
 
 
-# Gera o dashboard (HTML) a partir do que está no banco
+# Gera o dashboard HTML a partir do que está no banco
 def gerar_dashboard(saida):
   conexao = sqlite3.connect(BANCO)
   linhas = conexao.execute(
