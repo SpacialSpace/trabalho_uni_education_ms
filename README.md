@@ -7,3 +7,8 @@ Uso:
   
 Precisa do arquivo template.html na mesma pasta deste script.
 Ao rodar o script, ele também cria o .db
+
+Notas:
+- Dados de 2025 não estão disponíveis
+- Dados de 2024 vão até 31 de Julho
+- Dados de 2026 vão até 31 de Março
