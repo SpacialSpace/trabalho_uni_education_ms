@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matrículas na rede estadual de MS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#EEF3F4;--sf:#fff;--ink:#12292F;--mut:#5A7176;--line:#D3DEE0;--pri:#0F6B6B;--pri2:#DDEFEE;--good:#1B7A4B;--bad:#B4452F;--c1:#0F6B6B;--c2:#3A5BA0;--c3:#D9962B;--c4:#B4452F;--c5:#7A5C9E;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1A1D;--sf:#142428;--ink:#E4EEEF;--mut:#8FA8AD;--line:#26393D;--pri:#4FC0BA;--pri2:#173537;--good:#5FD39A;--bad:#F0836B;--c1:#4FC0BA;--c2:#7C9BE0;--c3:#EBB458;--c4:#F0836B;--c5:#B494D6}}
+:root[data-theme="dark"]{--bg:#0D1A1D;--sf:#142428;--ink:#E4EEEF;--mut:#8FA8AD;--line:#26393D;--pri:#4FC0BA;--pri2:#173537;--good:#5FD39A;--bad:#F0836B;--c1:#4FC0BA;--c2:#7C9BE0;--c3:#EBB458;--c4:#F0836B;--c5:#B494D6}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Atkinson Hyperlegible",system-ui,sans-serif}
+.app{display:grid;grid-template-columns:272px 1fr;gap:20px;max-width:1280px;margin:0 auto;padding:20px}
+aside{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:18px;align-self:start;position:sticky;top:20px}
+h1{font-size:1.35rem;margin:0 0 2px}h2{font-size:1rem;margin:0}h3{font-size:.95rem;margin:18px 0 8px}
+.sub{color:var(--mut);font-size:.9rem;margin:0 0 6px}
+label.f{display:block;font-size:.9rem;color:var(--mut);margin-top:10px}
+input[type=month]{width:100%;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip span{display:inline-block;padding:5px 11px;border:1px solid var(--line);border-radius:99px;font-size:.88rem;cursor:pointer;color:var(--mut);user-select:none}
+.chip input:checked+span{background:var(--pri2);border-color:var(--pri);color:var(--ink);font-weight:700}
+.chip input:focus-visible+span,button:focus-visible,input[type=month]:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+.btn{padding:6px 11px;border:1px solid var(--line);border-radius:8px;background:var(--sf);color:var(--ink);font-size:.88rem}
+.btn:hover{border-color:var(--pri)}
+.link{background:none;border:0;color:var(--pri);padding:0;text-decoration:underline;margin-top:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px}
+.kpi{text-align:left;background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px;color:var(--ink)}
+.kpi[aria-pressed=true]{border-color:var(--pri);box-shadow:inset 0 0 0 1px var(--pri)}
+.kpi .l{font-size:.88rem;color:var(--mut)}.kpi .v{font-size:1.75rem;font-weight:700;line-height:1.2}
+.kpi .d{font-size:.85rem;font-weight:700}.good{color:var(--good)}.bad{color:var(--bad)}.neu{color:var(--mut);font-weight:400!important}
+.card{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px}
+.hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.cv{position:relative;height:300px}.cv.s{height:230px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two .card{margin-top:12px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}th{color:var(--mut);font-weight:700}
+#empty{background:var(--sf);border:1px dashed var(--line);border-radius:12px;padding:32px;margin-top:12px;text-align:center}
+.chk{font-size:.9rem;color:var(--mut);display:flex;gap:6px;align-items:center}
+@media(max-width:860px){.app{grid-template-columns:1fr;padding:12px}aside{position:static}.two{grid-template-columns:1fr}}
+
+[hidden]{display:none!important}
+select,input[type=search]{width:100%;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+select:focus-visible,input[type=search]:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+#ml{max-height:190px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.mi{display:flex;gap:8px;align-items:center;font-size:.9rem;padding:2px 0}
+.note{background:var(--pri2);border-radius:8px;padding:8px 12px;font-size:.88rem;margin:0 0 10px}
+.hd input[type=search]{width:240px;max-width:100%}
+td:first-child{white-space:normal;min-width:240px}
+.row>div{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+<aside aria-label="Filtros">
+  <h1>Matrículas na rede estadual</h1>
+  <p class="sub">Mato Grosso do Sul, por unidade escolar. Os gráficos acompanham os filtros.</p>
+  <h3>Período</h3>
+  <div class="row"><div><label class="f" for="from">De</label><select id="from"></select></div><div><label class="f" for="to">Até</label><select id="to"></select></div></div>
+  <h3>Município <span class="sub" id="mc"></span></h3>
+  <input type="search" id="mq" placeholder="Buscar município" aria-label="Buscar município">
+  <div class="row" style="margin:6px 0"><button class="btn" id="mall">Todos</button><button class="btn" id="mnone">Nenhum</button></div>
+  <div id="ml"></div>
+  <h3>Tipo de unidade</h3><div class="row" id="tps"></div>
+  <button class="link" id="reset">Limpar filtros</button>
+  <p class="sub" id="src" style="margin-top:16px;font-size:.82rem"></p>
+</aside>
+<main>
+  <div id="empty" hidden><h2>Nenhum dado para esses filtros</h2><p class="sub">Escolha ao menos um município, um tipo de unidade e um período válido.</p></div>
+  <div id="main">
+    <div id="notes"></div>
+    <div class="kpis" id="kpis"></div>
+    <section class="card">
+      <div class="hd"><h2 id="tt"></h2><label class="chk"><input type="checkbox" id="cmp"> Separar por tipo de unidade</label></div>
+      <div class="cv"><canvas id="trend" role="img" aria-label="Evolução anual do indicador selecionado"></canvas></div>
+      <p class="sub" style="margin:6px 0 0;font-size:.82rem">Pontos vazados indicam ano em andamento. Lacunas indicam ano sem dados.</p>
+    </section>
+    <div class="two">
+      <section class="card"><h2 id="t2"></h2><div class="cv s"><canvas id="byMun" role="img" aria-label="Indicador por município"></canvas></div></section>
+      <section class="card"><h2 id="t3"></h2><div class="cv s"><canvas id="byTip" role="img" aria-label="Indicador por tipo de unidade"></canvas></div></section>
+    </div>
+    <section class="card">
+      <div class="hd"><h2 id="t4"></h2><input type="search" id="uq" placeholder="Buscar unidade ou município" aria-label="Buscar unidade ou município"></div>
+      <div class="tw"><table id="tb"></table></div>
+      <button class="btn" id="more" style="margin-top:10px">Mostrar mais</button>
+    </section>
+  </div>
+</main>
+</div>
+<script>
+/*DATA*/
+const D=DB.ROWS.map(r=>({y:r[0],m:DB.MUN[r[1]],u:DB.UNI[r[2]],t:DB.TIPO[r[3]],tot:r[4],apos:r[5],tr:r[6],ca:r[7],ap:r[8],rp:r[9]}));
+const PARC=DB.PARC,YS=[...new Set(D.map(d=>d.y))].sort((a,b)=>a-b),MUNS=[...new Set(D.map(d=>d.m))].sort((a,b)=>a.localeCompare(b,'pt-BR')),TIPOS=[...new Set(D.map(d=>d.t))].sort();
+const M={mat:{l:'Matrículas',n:r=>r.tot,up:null},apr:{l:'Aprovação',n:r=>r.ap,d:r=>r.ap+r.rp,fin:1,up:1},rep:{l:'Reprovação',n:r=>r.rp,d:r=>r.ap+r.rp,fin:1,up:0},can:{l:'Cancelamentos',n:r=>r.ca,d:r=>r.tot,up:0},tra:{l:'Transferências',n:r=>r.tr,d:r=>r.tot,up:null},tar:{l:'Matrículas após o Censo',n:r=>r.apos,d:r=>r.tot,up:null}};
+const S={from:YS[0],to:YS.at(-1),mun:new Set(MUNS),tip:new Set(TIPOS),met:'apr',more:15};
+const $=s=>document.querySelector(s),css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function val(rs,k){if(!rs.length)return null;const m=M[k];let a=0,b=0;rs.forEach(r=>{a+=m.n(r);if(m.d)b+=m.d(r)});return m.d?(b?a/b*100:null):a}
+const fmt=(v,k)=>v==null?'–':k==='mat'?Math.round(v).toLocaleString('pt-BR'):v.toFixed(1).replace('.',',')+'%';
+const sel=()=>D.filter(d=>d.y>=S.from&&d.y<=S.to&&S.mun.has(d.m)&&S.tip.has(d.t));
+const yl=()=>{const a=[];for(let y=S.from;y<=S.to;y++)a.push(y);return a};
+const ser=(rs,k)=>yl().map(y=>M[k].fin&&PARC.includes(y)?null:val(rs.filter(r=>r.y===y),k));
+function ref(s){let i=s.length-1;while(i>=0&&s[i]==null)i--;if(i<0)return null;let j=i-1;while(j>=0&&s[j]==null)j--;return{i,v:s[i],p:j>=0?s[j]:null}}
+const grp=(rs,f)=>{const g={};rs.forEach(r=>(g[f(r)]??=[]).push(r));return g};
+$('#from').innerHTML=$('#to').innerHTML=YS.map(y=>`<option>${y}</option>`).join('');
+$('#ml').innerHTML=MUNS.map(m=>`<label class="mi"><input type="checkbox" value="${esc(m)}" checked> ${esc(m)}</label>`).join('');
+$('#tps').innerHTML=TIPOS.map(t=>`<label class="chip"><input type="checkbox" value="${esc(t)}" checked><span>${esc(t)}</span></label>`).join('');
+$('#src').textContent=`Fonte: Secretaria de Estado de Educação de MS, matrículas por unidade escolar. Dados carregados em ${DB.GER}.`+(DB.AJ?` Em ${DB.AJ} unidade(s) de EJA, resultados lançados como reprovação sem nenhuma aprovação foram tratados como “outras situações”.`:'');
+function sync(){$('#from').value=S.from;$('#to').value=S.to;document.querySelectorAll('#ml input').forEach(i=>i.checked=S.mun.has(i.value));document.querySelectorAll('#tps input').forEach(i=>i.checked=S.tip.has(i.value))}
+$('#from').onchange=e=>{S.from=+e.target.value;update()};$('#to').onchange=e=>{S.to=+e.target.value;update()};
+$('#ml').onchange=e=>{e.target.checked?S.mun.add(e.target.value):S.mun.delete(e.target.value);update()};
+$('#tps').onchange=e=>{e.target.checked?S.tip.add(e.target.value):S.tip.delete(e.target.value);update()};
+$('#mq').oninput=e=>{const q=norm(e.target.value);document.querySelectorAll('.mi').forEach(l=>l.hidden=!norm(l.textContent).includes(q))};
+$('#mall').onclick=()=>{MUNS.forEach(m=>S.mun.add(m));sync();update()};$('#mnone').onclick=()=>{S.mun.clear();sync();update()};
+$('#reset').onclick=()=>{MUNS.forEach(m=>S.mun.add(m));TIPOS.forEach(t=>S.tip.add(t));S.from=YS[0];S.to=YS.at(-1);$('#cmp').checked=false;$('#mq').value='';$('#uq').value='';document.querySelectorAll('.mi').forEach(l=>l.hidden=false);S.more=15;sync();update()};
+$('#cmp').onchange=update;$('#uq').oninput=()=>{S.more=15;update()};$('#more').onclick=()=>{S.more+=15;update()};
+const ch={};function mk(id,cfg){ch[id]&&ch[id].destroy();ch[id]=new Chart($('#'+id),cfg)}
+function update(){
+const rows=sel(),ok=S.from<=S.to&&rows.length;
+$('#empty').hidden=!!ok;$('#main').hidden=!ok;$('#mc').textContent=`(${S.mun.size} de ${MUNS.length})`;if(!ok)return;
+const Y=yl(),pp=Y.filter(y=>PARC.includes(y)),n=[],miss=Y.filter(y=>!YS.includes(y));
+if(pp.length)n.push(`${pp.join(' e ')}: ano em andamento nos dados da secretaria (a maioria dos estudantes ainda consta como “cursando”). Aprovação e reprovação não são calculadas para ele, e cancelamentos e transferências ainda podem aumentar.`);
+if(miss.length)n.push(`Não há dados publicados para ${miss.join(', ')}.`);
+$('#notes').innerHTML=n.map(x=>`<p class="note">${x}</p>`).join('');
+const R={};Object.keys(M).forEach(k=>R[k]=ref(ser(rows,k)));
+$('#kpis').innerHTML=Object.keys(M).map(k=>{const r=R[k];let v='–',d='<span class="d neu">sem dados no período</span>',sb='';
+if(r){const yr=Y[r.i];v=fmt(r.v,k);sb=`em ${yr}${PARC.includes(yr)?' (em andamento)':''}`;d='<span class="d neu">sem ano anterior</span>';
+if(r.p!=null){const df=k==='mat'?(r.v/r.p-1)*100:r.v-r.p,g=M[k].up==null?null:(df>=0)===!!M[k].up;d=`<span class="d ${Math.abs(df)<.05||g==null?'neu':g?'good':'bad'}">${df>=0?'▲ +':'▼ '}${df.toFixed(1).replace('.',',')}${k==='mat'?'%':' p.p.'} vs. anterior</span>`}}
+return`<button class="kpi" data-k="${k}" aria-pressed="${k===S.met}"><div class="l">${M[k].l}</div><div class="v">${v}</div><div class="l">${sb}</div>${d}</button>`}).join('');
+document.querySelectorAll('.kpi').forEach(b=>b.onclick=()=>{S.met=b.dataset.k;update()});
+const k=S.met,m=M[k],tx=css('--mut'),gr=css('--line'),cols=['--c1','--c2','--c3','--c4','--c5'].map(css).concat(['#6B7F86','#A5772B']);
+const pb=c=>Y.map(y=>PARC.includes(y)?css('--sf'):c);
+const yt=v=>k==='mat'?v.toLocaleString('pt-BR'):v+'%';
+$('#tt').textContent='Evolução anual: '+m.l;
+const ds=$('#cmp').checked?[...S.tip].map(t=>{const c=cols[TIPOS.indexOf(t)];return{label:t,data:ser(rows.filter(r=>r.t===t),k),borderColor:c,backgroundColor:c,tension:.25,pointRadius:4,pointBackgroundColor:pb(c),spanGaps:false}})
+:[{label:m.l,data:ser(rows,k),borderColor:cols[0],backgroundColor:cols[0]+'22',fill:true,tension:.25,pointRadius:4,pointBackgroundColor:pb(cols[0]),spanGaps:false}];
+const base={responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{color:tx},grid:{display:false}},y:{ticks:{color:tx,callback:yt},grid:{color:gr}}}};
+mk('trend',{type:'line',data:{labels:Y,datasets:ds},options:{...base,plugins:{legend:{display:ds.length>1,labels:{color:tx,boxWidth:12}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmt(c.parsed.y,k)}}}}});
+const ry=R[k]?Y[R[k].i]:Y.at(-1),ra=rows.filter(r=>r.y===ry);
+const bar=(id,labels,data,hz)=>mk(id,{type:'bar',data:{labels,datasets:[{data,backgroundColor:cols[0],borderRadius:4}]},options:{...base,indexAxis:hz?'y':'x',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.parsed[hz?'x':'y'],k)}}},scales:{x:{ticks:{color:tx,callback:hz?yt:undefined},grid:{display:hz,color:gr}},y:{ticks:{color:tx,callback:hz?undefined:yt},grid:{display:!hz,color:gr}}}}});
+const gm=Object.entries(grp(ra,r=>r.m)).sort((a,b)=>val(b[1],'mat')-val(a[1],'mat')).slice(0,10);
+$('#t2').textContent=`${m.l} nos 10 municípios com mais matrículas (${ry})`;bar('byMun',gm.map(x=>x[0]),gm.map(x=>val(x[1],k)),true);
+const gt=Object.entries(grp(ra,r=>r.t)).sort((a,b)=>val(b[1],'mat')-val(a[1],'mat'));
+$('#t3').textContent=`${m.l} por tipo de unidade (${ry})`;bar('byTip',gt.map(x=>x[0]),gt.map(x=>val(x[1],k)),false);
+const ly=Math.max(...rows.map(r=>r.y)),q=norm($('#uq').value),us=rows.filter(r=>r.y===ly&&norm(r.u+' '+r.m).includes(q)).sort((a,b)=>b.tot-a.tot);
+$('#t4').textContent=`Unidades escolares em ${ly}${PARC.includes(ly)?' (em andamento)':''}`;
+const c=(r,x)=>M[x].fin&&PARC.includes(ly)?null:val([r],x);
+$('#tb').innerHTML='<tr><th>Unidade</th><th>Município</th><th>Tipo</th><th>Matrículas</th><th>Aprovação</th><th>Cancelamentos</th><th>Transferências</th></tr>'+us.slice(0,S.more).map(r=>`<tr><td>${esc(r.u)}</td><td>${esc(r.m)}</td><td>${esc(r.t)}</td><td>${fmt(r.tot,'mat')}</td><td>${fmt(c(r,'apr'),'apr')}</td><td>${fmt(c(r,'can'),'can')}</td><td>${fmt(c(r,'tra'),'tra')}</td></tr>`).join('');
+$('#more').hidden=us.length<=S.more;$('#more').textContent=`Mostrar mais (${us.length-S.more} restantes)`;
+}
+sync();update();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',update);
+</script>
+</body>
+</html>
