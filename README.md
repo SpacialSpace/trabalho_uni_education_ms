@@ -6,3 +6,4 @@ Uso:
 - python educacao_ms.py --saida x.html   nome do HTML gerado
   
 Precisa do arquivo template.html na mesma pasta deste script.
+Ao rodar o script, ele também cria o .db
